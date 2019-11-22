@@ -1,86 +1,94 @@
 package dataStructure;
 
 public class InputVertex {
-	private Vertex base;
-	private double price;
-	private double flow;
-	// tmp information for greedy
-	private InputVertex pi; // prior
-	private double currentProfit;//
 
-	public InputVertex(Vertex base, double price, double flow) {
-		this.base = base;
-		this.price = price;
-		this.flow = flow;
-	}
+  private Vertex base;
+  private double price;
+  private double flow;
+  // tmp information for greedy
+  private VertexGreedyInformation vertexGreedyInformation;
 
-	public InputVertex(double x, double y, double expectPrice, double expectFlow) {
-		this(new Vertex(x, y), expectPrice, expectFlow);
-	}
+  public InputVertex (Vertex base, double price, double flow) {
+    this.base = base;
+    this.price = price;
+    this.flow = flow;
+    this.init();
+  }
 
-	public InputVertex getPi() {
-		return pi;
-	}
+  private void init () {
+    vertexGreedyInformation = new VertexGreedyInformation();
+  }
 
-	public void setPi(InputVertex pi) {
-		this.pi = pi;
-	}
+  public InputVertex (double x, double y, double expectPrice, double expectFlow) {
+    this(new Vertex(x, y), expectPrice, expectFlow);
+  }
 
-	public double getCurrentProfit() {
-		return currentProfit;
-	}
+  public InputVertex getPi () {
+    return this.vertexGreedyInformation.getPi();
+  }
 
-	public void setCurrentProfit(double currentProfit) {
-		this.currentProfit = currentProfit;
-	}
+  public void setPi (InputVertex pi) {
+    this.vertexGreedyInformation.setPi(pi);
+  }
 
-	public Vertex getBase() {
-		return base;
-	}
+  public double getCurrentProfit () {
+    return this.vertexGreedyInformation.getCurrentProfit();
+  }
 
-	public void setBase(Vertex base) {
-		this.base = base;
-	}
+  public void setCurrentProfit (double currentProfit) {
+    this.vertexGreedyInformation.setCurrentProfit(currentProfit);
+  }
 
-	public double getPrice() {
-		return price;
-	}
+  public Vertex getBase () {
+    return base;
+  }
 
-	public void setPrice(double price) {
-		this.price = price;
-	}
+  public void setBase (Vertex base) {
+    this.base = base;
+  }
 
-	public double getFlow() {
-		return flow;
-	}
+  public double getPrice () {
+    return price;
+  }
 
-	public void setFlow(double flow) {
-		this.flow = flow;
-	}
+  public void setPrice (double price) {
+    this.price = price;
+  }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		InputVertex that = (InputVertex) o;
-		return base.equals(that.base);
-	}
+  public double getFlow () {
+    return flow;
+  }
 
-	@Override
-	public int hashCode() {
-		return base.hashCode();
-	}
+  public void setFlow (double flow) {
+    this.flow = flow;
+  }
 
-	@Override
-	public String toString() {
-		return "InputVertex{" + "base=" + base + ", price=" + price + ", flow=" + flow + ", pi=" + pi
-				+ ", currentProfit=" + currentProfit + '}';
-	}
-	public String printXY() {
-		return "("+this.getBase().getX()+","+this.getBase().getY()+")";
-	}
+  @Override
+  public boolean equals (Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    InputVertex that = (InputVertex) o;
+    return base.equals(that.base);
+  }
+
+  @Override
+  public int hashCode () {
+    return base.hashCode();
+  }
+
+  @Override
+  public String toString () {
+    InputVertex pi =this.vertexGreedyInformation.getPi();
+    return "{" + this.printXY() + "[price=" + price + ", flow=" + flow + "], pi=" + (pi==null?"null":printXY())
+    + ", currentProfit=" + this.vertexGreedyInformation.getCurrentProfit() + '}';
+  }
+
+  public String printXY () {
+    return "(" + this.getBase().getX() + "," + this.getBase().getY() + ")";
+  }
+
 }

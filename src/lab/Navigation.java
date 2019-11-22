@@ -77,11 +77,6 @@ public class Navigation {
 		Double speed;
 		String vFrom;
 		String vTo;
-		/**
-		 * @param eleType
-		 * @param distance
-		 * @param waitTime
-		 */
 		public AudMapElement(int eleType) {
 			this.eleType = eleType;
 		}

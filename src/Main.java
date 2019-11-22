@@ -1,9 +1,7 @@
-import java.io.BufferedReader;
-import java.io.Reader;
 import java.util.Scanner;
 
+import core.Greedy;
 import dataStructure.InputVertex;
-import dataStructure.Vertex;
 
 public class Main {
 
@@ -19,7 +17,7 @@ public class Main {
 //		InputVertex B = new InputVertex(new Vertex(1, 1), -5, 1);
 //		
 //		Cost: priceCable, priceFlow
-//		Greedy gre = new Greedy(root, 1, 0);
+//		core.Greedy gre = new core.Greedy(root, 1, 0);
 //		gre.getG().getAllVertices().forEach(x -> System.out.println(x));
 //		gre.dynamicAdd(A);
 //		gre.getG().getAllVertices().forEach(x -> System.out.println(x));

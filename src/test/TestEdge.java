@@ -5,43 +5,50 @@ import java.util.Scanner;
 import dataStructure.InputVertex;
 
 public class TestEdge {
-	public InputVertex A;
-	public InputVertex B;
+	public TestVertex a;
+	public TestVertex b;
 	public double profit;
-	public TestEdge(InputVertex a, InputVertex b, double profit) {
-		super();
-		A = a;
-		B = b;
+	public TestEdge (TestVertex a, TestVertex b, double profit) {
+		this.a = a;
+		this.b = b;
 		this.profit = profit;
 	}
+
 	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((A == null) ? 0 : A.hashCode());
-		result = prime * result + ((B == null) ? 0 : B.hashCode());
-		return result;
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
+	public boolean equals (Object o) {
+		if (this == o) {
 			return true;
-		if (obj == null)
+		}
+		if (o == null || getClass() != o.getClass()) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		TestEdge testEdge = (TestEdge) o;
+		if (Double.compare(testEdge.profit, profit) != 0) {
 			return false;
-		TestEdge other = (TestEdge) obj;
-		if (A == null) {
-			if (other.A != null)
-				return false;
-		} else if (!A.equals(other.A))
+		}
+		if (a != null
+				? !a.equals(testEdge.a)
+				: testEdge.a != null) {
 			return false;
-		if (B == null) {
-			if (other.B != null)
-				return false;
-		} else if (!B.equals(other.B))
-			return false;
-		return true;
+		}
+		return b != null
+					 ? b.equals(testEdge.b)
+					 : testEdge.b == null;
+	}
+
+	@Override
+	public int hashCode () {
+		int result;
+		long temp;
+		result = a != null
+						 ? a.hashCode()
+						 : 0;
+		result = 31 * result + (b != null
+														? b.hashCode()
+														: 0);
+		temp = Double.doubleToLongBits(profit);
+		result = 31 * result + (int) (temp ^ (temp >>> 32));
+		return result;
 	}
 
 }
