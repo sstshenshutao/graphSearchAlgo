@@ -1,0 +1,17 @@
+Digraph{
+B [label="(1.0,1.0),10.0"];
+C [label="(2.0,2.0),8.0"];
+D [label="(3.0,3.0),7.0"];
+E [label="(4.0,4.0),4.0"];
+F [label="(5.0,5.0),5.0"];
+G [label="(6.0,6.0),5.0"];
+H [label="(7.0,7.0),5.0"];
+A [label="(0.0,0.0),0.0"];
+A -> B [label="p:10.0,"][style=bold];
+A -> C [label="p:8.0,"][style=bold];
+B -> D [label="p:7.0,"][style=bold];
+D -> E [label="p:4.0,"][style=bold];
+D -> F [label="p:5.0,"][style=bold];
+F -> G [label="p:5.0,"][style=bold];
+G -> H [label="p:5.0,"][style=bold];
+}

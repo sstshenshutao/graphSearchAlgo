@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import lab.Navigation;
+import test.TestDoubleOriginalGreedy;
+import test.TestOriginalMain;
 
 /**
  * TestCases for the second lab. This class contains the static methods used by
@@ -42,7 +44,7 @@ public class AllTests {
 	 * @return The shortest distance between start and stop in km
 	 */
 	public static final int testDistance(String filename, String start, String stop) {
-		Navigation lab = new Navigation(filename);
+		TestOriginalMain lab = TestOriginalMain.createOne(filename);
 		// ArrayList < String > returnMap = new ArrayList < String >();
 
 		// returnMap = lab.findShortestRoute(start,stop);

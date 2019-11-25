@@ -1,6 +1,7 @@
 package test;
 
 public class TestVertex {
+
   private String name;
 
   public String getName () {
@@ -30,6 +31,11 @@ public class TestVertex {
     return name != null
            ? name.hashCode()
            : 0;
+  }
+
+  @Override
+  public String toString () {
+    return "TestVertex{" + name + '}';
   }
 
 }

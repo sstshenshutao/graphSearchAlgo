@@ -51,4 +51,9 @@ public class TestEdge {
 		return result;
 	}
 
+	@Override
+	public String toString () {
+		return "TestEdge{" + "a=" + a + ", b=" + b + ", profit=" + profit + '}';
+	}
+
 }

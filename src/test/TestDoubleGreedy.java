@@ -2,13 +2,11 @@ package test;
 
 import core.Greedy;
 import dataStructure.InputVertex;
-import lab.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 /**
  * this is the testDouble class for the greedy.
@@ -20,10 +18,10 @@ public class TestDoubleGreedy extends Greedy {
     super(root, priceCable, priceFlow);
   }
 
-  private double x = 1;
-  private double y = 1;
-  private Map<String, InputVertex> nameList = new HashMap<>();
-  private Map<InputVertex, String> namePrintList = new HashMap<>();
+  protected double x = 1;
+  protected double y = 1;
+  protected Map<String, InputVertex> nameList = new HashMap<>();
+  protected Map<InputVertex, String> namePrintList = new HashMap<>();
 
   public TestDoubleGreedy (String name) {
     this(new InputVertex(0.0, 0.0, 0, 0), 0.0, 0.0);
@@ -78,11 +76,14 @@ public class TestDoubleGreedy extends Greedy {
    */
   public void addTestNode (String name) {
     InputVertex newV = new InputVertex(this.x, this.y, 0.0, 0.0);
+    System.out.println("now add:" + name);
     this.x++;
     this.y++;
-    this.dynamicAdd(newV);
-    nameList.put(name, newV);
     this.namePrintList.put(newV, name);
+    this.dynamicAdd(newV);
+    this.tmpList.forEach(x -> System.out.println(x));
+    this.printMe();
+    nameList.put(name, newV);
   }
 
   public int findShortestDistance (String A, String B) {
@@ -98,7 +99,8 @@ public class TestDoubleGreedy extends Greedy {
     } else {
       this.getG().setRoot(this.nameList.get(A));
       this.dijkstra(0);
-      sd = 1;
+      InputVertex tmpnode = this.nameList.get(B);
+      sd = (int)tmpnode.getCurrentProfit();
       printMe();
     }
     return sd;
@@ -108,13 +110,8 @@ public class TestDoubleGreedy extends Greedy {
     this.getG().printGraph(this.namePrintList);
   }
 
-  @Override
-  protected void relax (InputVertex u, InputVertex v, BiFunction<InputVertex, InputVertex, Double> profitFunction) {
-    double profit = profitFunction.apply(v, u);
-    if (v.getCurrentProfit() < profit) {
-      v.setPi(u);
-      v.setCurrentProfit(profit);
-    }
+  public String printNodeName (InputVertex i) {
+    return this.namePrintList.get(i);
   }
 
 }

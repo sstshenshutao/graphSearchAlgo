@@ -1,0 +1,13 @@
+Digraph{
+B [label="(1.0,1.0),3.0"];
+C [label="(2.0,2.0),5.0"];
+D [label="(3.0,3.0),4.0"];
+E [label="(4.0,4.0),2.0"];
+F [label="(5.0,5.0),4.0"];
+A [label="(0.0,0.0),0.0"];
+A -> B [label="p:3.0,"][style=bold];
+B -> C [label="p:5.0,"][style=bold];
+C -> D [label="p:4.0,"][style=bold];
+D -> E [label="p:2.0,"][style=bold];
+E -> F [label="p:4.0,"][style=bold];
+}

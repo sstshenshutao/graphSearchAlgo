@@ -8,7 +8,7 @@ import java.util.List;
 
 public class TestMain {
 
-  private TestDoubleGreedy testDoubleGreedy;
+  protected TestDoubleGreedy testDoubleGreedy;
 
   public static void main (String[] args) {
     TestMain testMain= new TestMain();
@@ -18,7 +18,7 @@ public class TestMain {
     testMain.testDoubleGreedy.findShortestDistance("A","H");
   }
 
-  private void readFiletoMap (String filename) {
+  protected void readFiletoMap (String filename) {
     //this I/O Operation is referred from lab 1.
     FileReader fr;
     //		int a=0;
@@ -44,6 +44,7 @@ public class TestMain {
       //add profit(edges)
       for (TestMain.AudMapElement l : buff) {
         if (l.eleType == 2) {
+          System.out.println("addEdge:"+l.vTo+"|"+l.vFrom+"|"+l.distance);
           this.testDoubleGreedy.addTestEdge(l.vTo,l.vFrom,l.distance);
         }
       }
@@ -57,6 +58,7 @@ public class TestMain {
 
       for (TestMain.AudMapElement l : buff) {
         if (l.eleType == 1) {
+          System.out.println("addNode:"+l.vFrom);
           this.testDoubleGreedy.addTestNode(l.vFrom);
         }
       }
@@ -68,7 +70,7 @@ public class TestMain {
     }
   }
 
-  private class AudMapElement {
+  protected class AudMapElement {
 
     int eleType; //0:nothing, 1:v , 2:e
     Double distance; //see the distance as profit
@@ -83,7 +85,7 @@ public class TestMain {
 
   }
 
-  private TestMain.AudMapElement parselineDigraph (String line) {
+  protected TestMain.AudMapElement parselineDigraph (String line) {
     int eleType = (line.contains("->"))
                   ? 2
                   : (line.contains(";"))

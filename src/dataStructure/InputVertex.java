@@ -83,7 +83,7 @@ public class InputVertex {
   @Override
   public String toString () {
     InputVertex pi =this.vertexGreedyInformation.getPi();
-    return "{" + this.printXY() + "[price=" + price + ", flow=" + flow + "], pi=" + (pi==null?"null":printXY())
+    return "{" + this.printXY() + "[price=" + price + ", flow=" + flow + "], pi=" + (pi==null?"null":pi.printXY())
     + ", currentProfit=" + this.vertexGreedyInformation.getCurrentProfit() + '}';
   }
 

@@ -16,10 +16,10 @@ import java.util.function.Function;
 
 public class Greedy {
 
-  private Graph g;
-  private double priceCable;
-  private double priceFlow;
-  private List<Vertex> toBeAdded;
+  protected Graph g;
+  protected double priceCable;
+  protected double priceFlow;
+  protected List<Vertex> toBeAdded;
 
   public Greedy (InputVertex root, double priceCable, double priceFlow) {
     this.priceCable = priceCable;
@@ -58,7 +58,7 @@ public class Greedy {
     return true;
   }
 
-  private double getSumProfit () {
+  protected double getSumProfit () {
     return g.getSumProfit();
   }
 
@@ -100,7 +100,7 @@ public class Greedy {
     return newSumProfit > sumProfit;
   }
 
-  private InputVertex extractMaxProfit (List<InputVertex> w) {
+  protected InputVertex extractMaxProfit (List<InputVertex> w) {
     InputVertex k = w.get(0);
     for (InputVertex v : w) {
       if (v.getCurrentProfit() > k.getCurrentProfit()) {
@@ -111,7 +111,7 @@ public class Greedy {
     return k;
   }
 
-  private void initProfit (List<InputVertex> w) {
+  protected void initProfit (List<InputVertex> w) {
     InputVertex root = g.getRoot();
     root.setCurrentProfit(0);
     root.setPi(null);
@@ -120,23 +120,11 @@ public class Greedy {
       k.setPi(root);
     }
   }
-
-  protected void relax (InputVertex u, InputVertex v, BiFunction<InputVertex, InputVertex, Double> profitFunction) {
-    // adjpoints of u: v
-    //profit fron u to v is bigger tahn v's current
-    double profit = profitFunction.apply(v, u);
-    if ((v.getCurrentProfit() < profit + u.getCurrentProfit() || profit > v.getCurrentProfit()) && profit > 0)
-    //		if (v.getCurrentProfit() < profit && profit >= 0)
-    // setPrior
-    {
+  protected void relax (InputVertex v, InputVertex u, BiFunction<InputVertex, InputVertex, Double> profitFunction) {
+    double profit = profitFunction.apply(v,u);//first error
+    if (v.getCurrentProfit() < profit) {
       v.setPi(u);
-      // setProfit
-      //      v.setCurrentProfit(profit + u.getCurrentProfit());
-      if (u.getCurrentProfit() > 0) {
-        v.setCurrentProfit(profit);
-      } else {
-        v.setCurrentProfit(profit + u.getCurrentProfit());
-      }
+      v.setCurrentProfit(profit);
     }
   }
 

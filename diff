@@ -1,0 +1,1297 @@
+diff --git a/1.png b/1.png
+new file mode 100644
+index 0000000..1a35c87
+Binary files /dev/null and b/1.png differ
+diff --git a/src/Greedy.java b/src/Greedy.java
+deleted file mode 100644
+index b80ad94..0000000
+--- a/src/Greedy.java
++++ /dev/null
+@@ -1,247 +0,0 @@
+-import dataStructure.*;
+-import dataStructure.Graph;
+-import dataStructure.InputVertex;
+-import dataStructure.Vertex;
+-import test.TestEdge;
+-
+-import java.util.ArrayList;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
+-import java.util.Scanner;
+-import java.util.function.BiFunction;
+-import java.util.function.Function;
+-
+-public class Greedy {
+-
+-	private Graph g;
+-	private double priceCable;
+-	private double priceFlow;
+-	private List<Vertex> toBeAdded;
+-
+-	public Greedy(InputVertex root, double priceCable, double priceFlow) {
+-		this.priceCable = priceCable;
+-		this.priceFlow = priceFlow;
+-		g = new AdjazenzListGraph(root);
+-		toBeAdded = new ArrayList<>();
+-	}
+-
+-	public boolean dynamicAdd(InputVertex toBeAdded) {
+-		g.add(toBeAdded);
+-		// backup the old inputvertex.information
+-		Map<InputVertex, InputVertex> oldPi = new HashMap<>();
+-		for (InputVertex v : g.getAllVerticesWithoutRoot()) {
+-			oldPi.put(v, v.getPi());
+-		}
+-		Map<InputVertex, Double> oldCurrentProfit = new HashMap<>();
+-		for (InputVertex v : g.getAllVerticesWithoutRoot()) {
+-			oldCurrentProfit.put(v, v.getCurrentProfit());
+-		}
+-		if (!dijkstra(getSumProfit())) {
+-			// set the old information back.
+-			for (InputVertex v : g.getAllVerticesWithoutRoot()) {
+-				v.setPi(oldPi.get(v));
+-			}
+-		
+-
+-			for (InputVertex v : g.getAllVerticesWithoutRoot()) {
+-		
+-				v.setCurrentProfit(oldCurrentProfit.get(v));
+-			}
+-			return false;
+-		}
+-//    System.out.println("ccc");
+-//    g.getAllVerticesWithoutRoot().forEach(x->System.out.println(x));
+-		return true;
+-	}
+-
+-	private double getSumProfit() {
+-		return g.getSumProfit();
+-	}
+-	// public Boolean dynamicAdd (InputVertex toBeAdded) {
+-	// //all of the vertex in the graph
+-	// Vertex maxV=null; //graph.existed.point->newPoint maxProfit
+-	// double maxProfit= -1;
+-	// for (Vertex v : g.getAllVertices) {
+-	// double tmp=profit(toBeAdded,v);
+-	// if(tmp>maxProfit){
+-	// maxProfit = tmp;
+-	// maxV = v;
+-	// }
+-	// }
+-	// if (maxProfit<0){
+-	// return false;
+-	// }else {
+-	// g.addVertex(toBeAdded.getBase());
+-	// g.addEdge(maxV,toBeAdded.getBase(),maxProfit);
+-	// return true;
+-	// }
+-	// }
+-
+-	/**
+-	 * net profit
+-	 *
+-	 * @param a the new point
+-	 * @param b the existed specific point in the graph
+-	 * @return profit to the specific point
+-	 */
+-	private double profit(InputVertex a, Vertex b) {
+-		double distance = a.getBase().distance(b);
+-		double cost = (distance * priceCable) + (a.getFlow() * priceFlow); // cost in my side.
+-
+-		return (a.getFlow() * a.getPrice()) - cost;
+-
+-	}
+-
+-	/**
+-	 * net profit b-> a's profit
+-	 *
+-	 * @param a the new point
+-	 * @param b the existed specific point in the graph
+-	 * @return a.profit to the specific point b
+-	 */
+-	private Double profit(InputVertex a, InputVertex b) {
+-		double distance = a.getBase().distance(b.getBase());
+-		double cost = (distance * priceCable) + (a.getFlow() * priceFlow); // cost in my side.
+-		return (a.getFlow() * a.getPrice()) - cost;
+-	}
+-
+-	
+-//	!!!Testcode fuer: Eingabe Profit
+-//	public List<TestEdge> tmpList= new ArrayList<>();
+-//	private Double testDoubleProfit(InputVertex a, InputVertex b) {
+-//		for (TestEdge testEdge : tmpList) {
+-//			if (testEdge.A.equals(a) && testEdge.B.equals(b)) {
+-//				return testEdge.profit;
+-//			}
+-//		}
+-//		return 0.0;
+-//	}
+-	
+-	private BiFunction<InputVertex, InputVertex, Double> profitFunction() {
+-		    return (x, y) -> profit(x, y);
+-//!!!Testcode fuer: Eingabe Profit
+-//		return (x, y) -> testDoubleProfit(x, y);
+-	}
+-
+-	private boolean dijkstra(double sumProfit) {
+-		// WorkingSet w
+-		// FinishedSet F
+-		List<InputVertex> f = new ArrayList<>();
+-		List<InputVertex> w = new ArrayList<>(g.getAllVerticesWithoutRoot());
+-		// for all in w:w.clearAllInformation()
+-		initProfit(w);		
+-		f.add(g.getRoot());
+-		while (w.size() != 0) {
+-			InputVertex u = extractMaxProfit(w);// add pi and profit and delete u in w
+-			f.add(u);
+-			if (g.getAdj(f, u) != null && g.getAdj(f, u).size() != 0) {
+-				for (InputVertex v : g.getAdj(f, u)) {
+-					relax(v, u, profitFunction());
+-				}
+-			}
+-		}
+-		double newSumProfit = getSumProfit();
+-		return newSumProfit > sumProfit;
+-	}
+-
+-	private InputVertex extractMaxProfit(List<InputVertex> w) {
+-		InputVertex k = w.get(0);
+-		for (InputVertex v : w) {
+-			if (v.getCurrentProfit() > k.getCurrentProfit()) {
+-				k = v;
+-			}
+-		}
+-		w.remove(k);
+-		return k;
+-	}
+-
+-	private void initProfit(List<InputVertex> w) {
+-		InputVertex root = g.getRoot();
+-		root.setCurrentProfit(0);
+-		root.setPi(null);
+-		for (InputVertex k : w) {
+-			k.setCurrentProfit(profitFunction().apply(k, root));
+-			k.setPi(root);
+-		}
+-	}
+-
+-	private void relax(InputVertex u, InputVertex v, BiFunction<InputVertex, InputVertex, Double> profitFunction) {
+-		// adjpoints of u: v
+-		//profit fron u to v is bigger tahn v's current
+-		double profit = profitFunction.apply(v, u);
+-
+-		if ((v.getCurrentProfit() < profit + u.getCurrentProfit()|| profit > v.getCurrentProfit() ) && profit > 0)
+-//		if (v.getCurrentProfit() < profit && profit >= 0)
+-		// setPrior
+-		{
+-			
+-			v.setPi(u);
+-			// setProfit
+-//      v.setCurrentProfit(profit + u.getCurrentProfit());
+-			if(u.getCurrentProfit() > 0) {
+-				v.setCurrentProfit(profit);
+-			}else {
+-				v.setCurrentProfit(profit + u.getCurrentProfit());
+-			}
+-			
+-
+-		}
+-
+-	}
+-
+-	public Graph getG() {
+-		return g;
+-	}
+-	
+-	
+-//	!!!Testcode fuer: Eingabe Profit
+-//	public static void main(String[] args) {	
+-//		Scanner input = new Scanner(System.in);
+-//		boolean rootFlag=false;
+-//		Greedy gre = null;
+-//		double priceCable= 1;
+-//		double priceFlow= 5;
+-//		InputVertex root = new InputVertex(0,0,priceCable, priceFlow);
+-//		gre= new Greedy(root, priceCable, priceFlow);
+-//		//1points
+-//		InputVertex newNodeA = new InputVertex(1,1,5, 8);
+-//		InputVertex newNodeB = new InputVertex(1,2,5, 8);
+-//
+-//		InputVertex newNodeC = new InputVertex(4,5,5, 8);
+-//		InputVertex newNodeD = new InputVertex(2,3,5, 8);
+-//		InputVertex newNodeE = new InputVertex(2,4,5, 8);
+-//		InputVertex newNodeF = new InputVertex(2,5,5, 8);
+-//		
+-//		
+-////		2edge
+-//		gre.tmpList.add(new TestEdge(newNodeA,root,5.0));
+-//		gre.tmpList.add(new TestEdge(newNodeB,root,1.0));
+-//		gre.tmpList.add(new TestEdge(newNodeC,root,4.0));
+-//		gre.tmpList.add(new TestEdge(newNodeE,root,4.0));
+-//		gre.tmpList.add(new TestEdge(newNodeB,newNodeA,3.0));
+-//		gre.tmpList.add(new TestEdge(newNodeC,newNodeA,1.0));
+-//		gre.tmpList.add(new TestEdge(newNodeC,newNodeB,1.0));
+-//		gre.tmpList.add(new TestEdge(newNodeD,root,1.0));
+-//		gre.tmpList.add(new TestEdge(newNodeD,newNodeA,2.0));
+-//		gre.tmpList.add(new TestEdge(newNodeD,newNodeB,1.0));
+-//		gre.tmpList.add(new TestEdge(newNodeD,newNodeC,1.0));
+-//		gre.tmpList.add(new TestEdge(newNodeF,newNodeD,2.0));
+-//		
+-//	//	gre.tmpList.add(new TestEdge(newNodeC,newNodeA, 0.0));
+-//	//	gre.tmpList.add(new TestEdge(newNodeA,newNodeB,2.0));
+-//		
+-//		
+-//		//3add!
+-//		gre.dynamicAdd(newNodeA);
+-//		gre.dynamicAdd(newNodeB);
+-//		gre.dynamicAdd(newNodeC);
+-//		gre.dynamicAdd(newNodeD);
+-//		gre.dynamicAdd(newNodeE);
+-//		gre.dynamicAdd(newNodeF);
+-////		4.run
+-//		gre.getG().printGraph();
+-//		System.out.println("die gesamte Profit ist: "+ gre.getG().getSumProfit());
+-//	}
+-
+-}
+diff --git a/src/Main.java b/src/Main.java
+index 65804f3..e71668b 100644
+--- a/src/Main.java
++++ b/src/Main.java
+@@ -1,9 +1,7 @@
+-import java.io.BufferedReader;
+-import java.io.Reader;
+ import java.util.Scanner;
+ 
++import core.Greedy;
+ import dataStructure.InputVertex;
+-import dataStructure.Vertex;
+ 
+ public class Main {
+ 
+@@ -19,7 +17,7 @@ public class Main {
+ //		InputVertex B = new InputVertex(new Vertex(1, 1), -5, 1);
+ //		
+ //		Cost: priceCable, priceFlow
+-//		Greedy gre = new Greedy(root, 1, 0);
++//		core.Greedy gre = new core.Greedy(root, 1, 0);
+ //		gre.getG().getAllVertices().forEach(x -> System.out.println(x));
+ //		gre.dynamicAdd(A);
+ //		gre.getG().getAllVertices().forEach(x -> System.out.println(x));
+diff --git a/src/core/Greedy.java b/src/core/Greedy.java
+new file mode 100644
+index 0000000..874891d
+--- /dev/null
++++ b/src/core/Greedy.java
+@@ -0,0 +1,194 @@
++package core;
++
++import dataStructure.*;
++import dataStructure.Graph;
++import dataStructure.InputVertex;
++import dataStructure.Vertex;
++import test.TestEdge;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.Scanner;
++import java.util.function.BiFunction;
++import java.util.function.Function;
++
++public class Greedy {
++
++  private Graph g;
++  private double priceCable;
++  private double priceFlow;
++  private List<Vertex> toBeAdded;
++
++  public Greedy (InputVertex root, double priceCable, double priceFlow) {
++    this.priceCable = priceCable;
++    this.priceFlow = priceFlow;
++    g = new AdjazenzListGraph(root);
++    toBeAdded = new ArrayList<>();
++  }
++
++  /**
++   * this will call dijkstra to recalculate the graph
++   *
++   * @param toBeAdded
++   * @return
++   */
++  public boolean dynamicAdd (InputVertex toBeAdded) {
++    g.add(toBeAdded);
++    // backup the old inputvertex.information
++    Map<InputVertex, InputVertex> oldPi = new HashMap<>();
++    for (InputVertex v : g.getAllVerticesWithoutRoot()) {
++      oldPi.put(v, v.getPi());
++    }
++    Map<InputVertex, Double> oldCurrentProfit = new HashMap<>();
++    for (InputVertex v : g.getAllVerticesWithoutRoot()) {
++      oldCurrentProfit.put(v, v.getCurrentProfit());
++    }
++    if (!dijkstra(getSumProfit())) {
++      // set the old information back.
++      for (InputVertex v : g.getAllVerticesWithoutRoot()) {
++        v.setPi(oldPi.get(v));
++      }
++      for (InputVertex v : g.getAllVerticesWithoutRoot()) {
++        v.setCurrentProfit(oldCurrentProfit.get(v));
++      }
++      return false;
++    }
++    return true;
++  }
++
++  private double getSumProfit () {
++    return g.getSumProfit();
++  }
++
++  /**
++   * net profit b-> a's profit
++   *
++   * @param a the new point
++   * @param b the existed specific point in the graph
++   * @return a.profit to the specific point b
++   */
++  protected Double profit (InputVertex a, InputVertex b) {
++    double distance = a.getBase().distance(b.getBase());
++    double cost = (distance * priceCable) + (a.getFlow() * priceFlow); // cost in my side.
++    return (a.getFlow() * a.getPrice()) - cost;
++  }
++
++  protected BiFunction<InputVertex, InputVertex, Double> profitFunction () {
++    return (x, y) -> profit(x, y);
++  }
++
++  protected boolean dijkstra (double sumProfit) {
++    // WorkingSet w
++    // FinishedSet F
++    List<InputVertex> f = new ArrayList<>();
++    List<InputVertex> w = new ArrayList<>(g.getAllVerticesWithoutRoot());
++    // for all in w:w.clearAllInformation()
++    initProfit(w);
++    f.add(g.getRoot());
++    while (w.size() != 0) {
++      InputVertex u = extractMaxProfit(w);// add pi and profit and delete u in w
++      f.add(u);
++      if (g.getAdj(f, u) != null && g.getAdj(f, u).size() != 0) {
++        for (InputVertex v : g.getAdj(f, u)) {
++          relax(v, u, profitFunction());
++        }
++      }
++    }
++    double newSumProfit = getSumProfit();
++    return newSumProfit > sumProfit;
++  }
++
++  private InputVertex extractMaxProfit (List<InputVertex> w) {
++    InputVertex k = w.get(0);
++    for (InputVertex v : w) {
++      if (v.getCurrentProfit() > k.getCurrentProfit()) {
++        k = v;
++      }
++    }
++    w.remove(k);
++    return k;
++  }
++
++  private void initProfit (List<InputVertex> w) {
++    InputVertex root = g.getRoot();
++    root.setCurrentProfit(0);
++    root.setPi(null);
++    for (InputVertex k : w) {
++      k.setCurrentProfit(profitFunction().apply(k, root));
++      k.setPi(root);
++    }
++  }
++
++  protected void relax (InputVertex u, InputVertex v, BiFunction<InputVertex, InputVertex, Double> profitFunction) {
++    // adjpoints of u: v
++    //profit fron u to v is bigger tahn v's current
++    double profit = profitFunction.apply(v, u);
++    if ((v.getCurrentProfit() < profit + u.getCurrentProfit() || profit > v.getCurrentProfit()) && profit > 0)
++    //		if (v.getCurrentProfit() < profit && profit >= 0)
++    // setPrior
++    {
++      v.setPi(u);
++      // setProfit
++      //      v.setCurrentProfit(profit + u.getCurrentProfit());
++      if (u.getCurrentProfit() > 0) {
++        v.setCurrentProfit(profit);
++      } else {
++        v.setCurrentProfit(profit + u.getCurrentProfit());
++      }
++    }
++  }
++
++  public Graph getG () {
++    return g;
++  }
++  //	!!!Testcode fuer: Eingabe Profit
++  //	public static void main(String[] args) {
++  //		Scanner input = new Scanner(System.in);
++  //		boolean rootFlag=false;
++  //		core.Greedy gre = null;
++  //		double priceCable= 1;
++  //		double priceFlow= 5;
++  //		InputVertex root = new InputVertex(0,0,priceCable, priceFlow);
++  //		gre= new core.Greedy(root, priceCable, priceFlow);
++  //		//1points
++  //		InputVertex newNodeA = new InputVertex(1,1,5, 8);
++  //		InputVertex newNodeB = new InputVertex(1,2,5, 8);
++  //
++  //		InputVertex newNodeC = new InputVertex(4,5,5, 8);
++  //		InputVertex newNodeD = new InputVertex(2,3,5, 8);
++  //		InputVertex newNodeE = new InputVertex(2,4,5, 8);
++  //		InputVertex newNodeF = new InputVertex(2,5,5, 8);
++  //
++  //
++  ////		2edge
++  //		gre.tmpList.add(new TestEdge(newNodeA,root,5.0));
++  //		gre.tmpList.add(new TestEdge(newNodeB,root,1.0));
++  //		gre.tmpList.add(new TestEdge(newNodeC,root,4.0));
++  //		gre.tmpList.add(new TestEdge(newNodeE,root,4.0));
++  //		gre.tmpList.add(new TestEdge(newNodeB,newNodeA,3.0));
++  //		gre.tmpList.add(new TestEdge(newNodeC,newNodeA,1.0));
++  //		gre.tmpList.add(new TestEdge(newNodeC,newNodeB,1.0));
++  //		gre.tmpList.add(new TestEdge(newNodeD,root,1.0));
++  //		gre.tmpList.add(new TestEdge(newNodeD,newNodeA,2.0));
++  //		gre.tmpList.add(new TestEdge(newNodeD,newNodeB,1.0));
++  //		gre.tmpList.add(new TestEdge(newNodeD,newNodeC,1.0));
++  //		gre.tmpList.add(new TestEdge(newNodeF,newNodeD,2.0));
++  //
++  //	//	gre.tmpList.add(new TestEdge(newNodeC,newNodeA, 0.0));
++  //	//	gre.tmpList.add(new TestEdge(newNodeA,newNodeB,2.0));
++  //
++  //
++  //		//3add!
++  //		gre.dynamicAdd(newNodeA);
++  //		gre.dynamicAdd(newNodeB);
++  //		gre.dynamicAdd(newNodeC);
++  //		gre.dynamicAdd(newNodeD);
++  //		gre.dynamicAdd(newNodeE);
++  //		gre.dynamicAdd(newNodeF);
++  ////		4.run
++  //		gre.getG().printGraph();
++  //		System.out.println("die gesamte Profit ist: "+ gre.getG().getSumProfit());
++  //	}
++}
+diff --git a/src/dataStructure/AdjazenzListGraph.java b/src/dataStructure/AdjazenzListGraph.java
+index bf06f08..82f3631 100644
+--- a/src/dataStructure/AdjazenzListGraph.java
++++ b/src/dataStructure/AdjazenzListGraph.java
+@@ -1,7 +1,9 @@
+ package dataStructure;
+ 
+ import java.util.ArrayList;
++import java.util.HashMap;
+ import java.util.List;
++import java.util.Map;
+ 
+ public class AdjazenzListGraph implements Graph {
+ 
+@@ -17,6 +19,12 @@ public class AdjazenzListGraph implements Graph {
+     return this.root;
+   }
+ 
++  public void setRoot (InputVertex root) {
++    this.allVertices.remove(root);
++    this.allVertices.add(this.root);
++    this.root = root;
++  }
++
+   @Override
+   public List<InputVertex> getAllVertices () {
+     List<InputVertex> tmp = new ArrayList<>(getAllVerticesWithoutRoot());
+@@ -29,7 +37,7 @@ public class AdjazenzListGraph implements Graph {
+   }
+ 
+   @Override
+-  public List<InputVertex> getAdj (List<InputVertex>f,InputVertex u) {
++  public List<InputVertex> getAdj (List<InputVertex> f, InputVertex u) {
+     List<InputVertex> tmp = new ArrayList<>(getAllVertices());
+     tmp.remove(u);
+     for (InputVertex v : f) {
+@@ -47,55 +55,85 @@ public class AdjazenzListGraph implements Graph {
+   public double getSumProfit () {
+     double sum = 0.0;
+     for (InputVertex v : this.allVertices) {
+-    		if(v.getCurrentProfit() > 0) {
+-    			 sum += v.getCurrentProfit();	
+-    		}else {
+-    			sum += 0.0;
+-    		}
+-    	
+-    	
+-//    	sum += v.getCurrentProfit();
+-    	
+-    	
++      if (v.getCurrentProfit() > 0) {
++        sum += v.getCurrentProfit();
++      } else {
++        sum += 0.0;
++      }
++      //    	sum += v.getCurrentProfit();
+     }
+     return sum;
+   }
+ 
+   public void printGraph () {
+-  this.getAllVertices().forEach(x->  System.out.println(x));
+-//    for (InputVertex v : this.getAllVerticesWithoutRoot()) {
+-//      InputVertex tmp=v;
+-//      while (tmp.getPi()!=null){
+-//        System.out.println(tmp.getBase().toString()+"<-"+tmp.getPi().getBase().toString());
+-//        tmp=tmp.getPi();
+-//      }
+-//    }
++    visualGraph().forEach(x -> System.out.println(x));
+   }
+ 
+-  //
+-//  public static void main (String[] args) {
+-//    InputVertex root = new InputVertex(new Vertex(1, 2), 3, 5);
+-//    InputVertex A = new InputVertex(new Vertex(2, 3), 4, 5);
+-//    InputVertex B = new InputVertex(new Vertex(4, 4), 5, 5);
+-//    InputVertex C = new InputVertex(new Vertex(6, 5), 6, 5);
+-//    InputVertex D = new InputVertex(new Vertex(7, 6), 7, 5);
+-//    InputVertex E = new InputVertex(new Vertex(9, 7), 8, 5);
+-//    AdjazenzListGraph g = new AdjazenzListGraph(root);
+-//    root.setPi(null);
+-//    g.add(A);
+-//    A.setPi(root);
+-//    g.add(B);
+-//    B.setPi(root);
+-//    g.add(C);
+-//    C.setPi(A);
+-//    g.add(D);
+-//    D.setPi(A);
+-//    g.add(E);
+-//    E.setPi(D);
+-//    g.printGraph();
+-    //    g.getAllVertices().forEach(x-> System.out.println(x));
+-    //    g.getAllVerticesWithoutRoot().forEach(x-> System.out.println(x));
+-    //    g.getAdj(C).forEach(x-> System.out.println(x));
+- // }
++  public void printGraph (Map<InputVertex, String> labelNodes) {
++    visualGraph(labelNodes).forEach(x -> System.out.println(x));
++  }
++
++  public ArrayList<String> visualGraph () {
++    return visualGraph(null);
++  }
+ 
++  public ArrayList<String> visualGraph (Map<InputVertex, String> labelNodes) {
++    ArrayList<String> ret = new ArrayList<>();
++    ret.add("Digraph{");
++    //print all nodes:
++    if (labelNodes == null) {
++      int nodei = 0;
++      labelNodes = new HashMap<>();
++      for (InputVertex v : this.getAllVertices()) {
++        labelNodes.put(v, "node" + nodei);
++        nodei++;
++      }
++    }
++    for (InputVertex v : this.getAllVertices()) {
++      StringBuffer line = new StringBuffer();
++      line.append(labelNodes.get(v)).append(" [label=\"").append(v.printXY()).append(",").append(v.getCurrentProfit())
++          .append("\"];");
++      ret.add(line.toString());
++    }
++    //print edge:
++    for (InputVertex v : this.getAllVertices()) {
++      InputVertex pi = v.getPi();
++      if (pi != null) {
++        StringBuffer line = new StringBuffer();
++        //        pi->v
++        line.append(labelNodes.get(pi)).append(" -> ").append(labelNodes.get(v)).append(" [label=\"")
++            .append("p:" + v.getCurrentProfit()).append(",").append("\"]");
++        line.append("[style=bold]");
++        line.append(";");
++        ret.add(line.toString());
++      }
++    }
++    ret.add("}");
++    return ret;
++  }
++  //
++  //  public static void main (String[] args) {
++  //    InputVertex root = new InputVertex(new Vertex(1, 2), 3, 5);
++  //    InputVertex A = new InputVertex(new Vertex(2, 3), 4, 5);
++  //    InputVertex B = new InputVertex(new Vertex(4, 4), 5, 5);
++  //    InputVertex C = new InputVertex(new Vertex(6, 5), 6, 5);
++  //    InputVertex D = new InputVertex(new Vertex(7, 6), 7, 5);
++  //    InputVertex E = new InputVertex(new Vertex(9, 7), 8, 5);
++  //    AdjazenzListGraph g = new AdjazenzListGraph(root);
++  //    root.setPi(null);
++  //    g.add(A);
++  //    A.setPi(root);
++  //    g.add(B);
++  //    B.setPi(root);
++  //    g.add(C);
++  //    C.setPi(A);
++  //    g.add(D);
++  //    D.setPi(A);
++  //    g.add(E);
++  //    E.setPi(D);
++  //    g.printGraph();
++  //    g.getAllVertices().forEach(x-> System.out.println(x));
++  //    g.getAllVerticesWithoutRoot().forEach(x-> System.out.println(x));
++  //    g.getAdj(C).forEach(x-> System.out.println(x));
++  // }
+ }
+diff --git a/src/dataStructure/Graph.java b/src/dataStructure/Graph.java
+index a394425..ae0d278 100644
+--- a/src/dataStructure/Graph.java
++++ b/src/dataStructure/Graph.java
+@@ -1,13 +1,26 @@
+ package dataStructure;
+ 
+ import java.util.List;
++import java.util.Map;
+ 
+ public interface Graph {
+-  public InputVertex getRoot();
++
++  public InputVertex getRoot ();
++
+   public List<InputVertex> getAllVertices ();
+-  public List<InputVertex> getAllVerticesWithoutRoot();
+-  public List<InputVertex> getAdj (List<InputVertex>f,InputVertex u);
++
++  public List<InputVertex> getAllVerticesWithoutRoot ();
++
++  public List<InputVertex> getAdj (List<InputVertex> f, InputVertex u);
++
+   public void add (InputVertex u);
+-  public double getSumProfit();
++
++  public double getSumProfit ();
++
+   public void printGraph ();
++
++  public void printGraph (Map<InputVertex, String> labelNodes);
++
++  public void setRoot (InputVertex root);
++
+ }
+diff --git a/src/dataStructure/InputVertex.java b/src/dataStructure/InputVertex.java
+index 0186d5d..25fb749 100644
+--- a/src/dataStructure/InputVertex.java
++++ b/src/dataStructure/InputVertex.java
+@@ -1,86 +1,94 @@
+ package dataStructure;
+ 
+ public class InputVertex {
+-	private Vertex base;
+-	private double price;
+-	private double flow;
+-	// tmp information for greedy
+-	private InputVertex pi; // prior
+-	private double currentProfit;//
+-
+-	public InputVertex(Vertex base, double price, double flow) {
+-		this.base = base;
+-		this.price = price;
+-		this.flow = flow;
+-	}
+-
+-	public InputVertex(double x, double y, double expectPrice, double expectFlow) {
+-		this(new Vertex(x, y), expectPrice, expectFlow);
+-	}
+-
+-	public InputVertex getPi() {
+-		return pi;
+-	}
+-
+-	public void setPi(InputVertex pi) {
+-		this.pi = pi;
+-	}
+-
+-	public double getCurrentProfit() {
+-		return currentProfit;
+-	}
+-
+-	public void setCurrentProfit(double currentProfit) {
+-		this.currentProfit = currentProfit;
+-	}
+-
+-	public Vertex getBase() {
+-		return base;
+-	}
+-
+-	public void setBase(Vertex base) {
+-		this.base = base;
+-	}
+-
+-	public double getPrice() {
+-		return price;
+-	}
+-
+-	public void setPrice(double price) {
+-		this.price = price;
+-	}
+-
+-	public double getFlow() {
+-		return flow;
+-	}
+-
+-	public void setFlow(double flow) {
+-		this.flow = flow;
+-	}
+-
+-	@Override
+-	public boolean equals(Object o) {
+-		if (this == o) {
+-			return true;
+-		}
+-		if (o == null || getClass() != o.getClass()) {
+-			return false;
+-		}
+-		InputVertex that = (InputVertex) o;
+-		return base.equals(that.base);
+-	}
+-
+-	@Override
+-	public int hashCode() {
+-		return base.hashCode();
+-	}
+-
+-	@Override
+-	public String toString() {
+-		return "InputVertex{" + "base=" + base + ", price=" + price + ", flow=" + flow + ", pi=" + pi
+-				+ ", currentProfit=" + currentProfit + '}';
+-	}
+-	public String printXY() {
+-		return "("+this.getBase().getX()+","+this.getBase().getY()+")";
+-	}
++
++  private Vertex base;
++  private double price;
++  private double flow;
++  // tmp information for greedy
++  private VertexGreedyInformation vertexGreedyInformation;
++
++  public InputVertex (Vertex base, double price, double flow) {
++    this.base = base;
++    this.price = price;
++    this.flow = flow;
++    this.init();
++  }
++
++  private void init () {
++    vertexGreedyInformation = new VertexGreedyInformation();
++  }
++
++  public InputVertex (double x, double y, double expectPrice, double expectFlow) {
++    this(new Vertex(x, y), expectPrice, expectFlow);
++  }
++
++  public InputVertex getPi () {
++    return this.vertexGreedyInformation.getPi();
++  }
++
++  public void setPi (InputVertex pi) {
++    this.vertexGreedyInformation.setPi(pi);
++  }
++
++  public double getCurrentProfit () {
++    return this.vertexGreedyInformation.getCurrentProfit();
++  }
++
++  public void setCurrentProfit (double currentProfit) {
++    this.vertexGreedyInformation.setCurrentProfit(currentProfit);
++  }
++
++  public Vertex getBase () {
++    return base;
++  }
++
++  public void setBase (Vertex base) {
++    this.base = base;
++  }
++
++  public double getPrice () {
++    return price;
++  }
++
++  public void setPrice (double price) {
++    this.price = price;
++  }
++
++  public double getFlow () {
++    return flow;
++  }
++
++  public void setFlow (double flow) {
++    this.flow = flow;
++  }
++
++  @Override
++  public boolean equals (Object o) {
++    if (this == o) {
++      return true;
++    }
++    if (o == null || getClass() != o.getClass()) {
++      return false;
++    }
++    InputVertex that = (InputVertex) o;
++    return base.equals(that.base);
++  }
++
++  @Override
++  public int hashCode () {
++    return base.hashCode();
++  }
++
++  @Override
++  public String toString () {
++    InputVertex pi =this.vertexGreedyInformation.getPi();
++    return "{" + this.printXY() + "[price=" + price + ", flow=" + flow + "], pi=" + (pi==null?"null":printXY())
++    + ", currentProfit=" + this.vertexGreedyInformation.getCurrentProfit() + '}';
++  }
++
++  public String printXY () {
++    return "(" + this.getBase().getX() + "," + this.getBase().getY() + ")";
++  }
++
+ }
+diff --git a/src/dataStructure/VertexGreedyInformation.java b/src/dataStructure/VertexGreedyInformation.java
+new file mode 100644
+index 0000000..837cdec
+--- /dev/null
++++ b/src/dataStructure/VertexGreedyInformation.java
+@@ -0,0 +1,29 @@
++package dataStructure;
++
++public class VertexGreedyInformation {
++  private InputVertex pi; // prior
++  private double currentProfit;//
++
++  public VertexGreedyInformation () {
++    this.pi = null;
++    this.currentProfit=0.0;
++  }
++
++  public InputVertex getPi () {
++    return pi;
++  }
++
++  public void setPi (InputVertex pi) {
++    this.pi = pi;
++  }
++
++  public double getCurrentProfit () {
++    return currentProfit;
++  }
++
++  public void setCurrentProfit (double currentProfit) {
++    this.currentProfit = currentProfit;
++  }
++
++
++}
+diff --git a/src/lab/Navigation.java b/src/lab/Navigation.java
+index 7f09e65..70cccb2 100644
+--- a/src/lab/Navigation.java
++++ b/src/lab/Navigation.java
+@@ -77,11 +77,6 @@ public class Navigation {
+ 		Double speed;
+ 		String vFrom;
+ 		String vTo;
+-		/**
+-		 * @param eleType
+-		 * @param distance
+-		 * @param waitTime
+-		 */
+ 		public AudMapElement(int eleType) {
+ 			this.eleType = eleType;
+ 		}
+diff --git a/src/test/TestDoubleGreedy.java b/src/test/TestDoubleGreedy.java
+new file mode 100644
+index 0000000..fec46b6
+--- /dev/null
++++ b/src/test/TestDoubleGreedy.java
+@@ -0,0 +1,120 @@
++package test;
++
++import core.Greedy;
++import dataStructure.InputVertex;
++import lab.Vertex;
++
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++import java.util.function.BiFunction;
++
++/**
++ * this is the testDouble class for the greedy.
++ * the profit function is replaced by manipulated data(@see testDoubleProfit())
++ */
++public class TestDoubleGreedy extends Greedy {
++
++  public TestDoubleGreedy (InputVertex root, double priceCable, double priceFlow) {
++    super(root, priceCable, priceFlow);
++  }
++
++  private double x = 1;
++  private double y = 1;
++  private Map<String, InputVertex> nameList = new HashMap<>();
++  private Map<InputVertex, String> namePrintList = new HashMap<>();
++
++  public TestDoubleGreedy (String name) {
++    this(new InputVertex(0.0, 0.0, 0, 0), 0.0, 0.0);
++    nameList.put(name, this.getG().getRoot());
++    namePrintList.put(this.getG().getRoot(), name);
++  }
++  //  public boolean dynamicAdd(InputVertex toBeAdded) {
++  //  public boolean dynamicAddTestDouble(String){
++  //
++  //  }
++
++  public List<TestEdge> tmpList = new ArrayList<>();
++
++  /**
++   * this profit will override the original class Greedy.profit
++   * this is a's profit via node b
++   *
++   * @param a
++   * @param b
++   * @return
++   */
++  @Override
++  protected Double profit (InputVertex a, InputVertex b) {
++    for (TestEdge testEdge : tmpList) {
++      //      System.out.println(a);
++      if (this.namePrintList.containsKey(a) && this.namePrintList.containsKey(b) && this.namePrintList.get(a).equals(
++        testEdge.a.getName()) && this.namePrintList.get(b).equals(testEdge.b.getName())) {
++        return testEdge.profit;
++      }
++    }
++    return 0.0;
++  }
++
++  /**
++   * this add a test edge from B to A
++   *
++   * @param aName  the Node you care about
++   * @param bName  via node
++   * @param profit the A's profit via B( "profit(B->A)" )
++   */
++  public void addTestEdge (String aName, String bName, double profit) {
++    this.tmpList.add(new TestEdge(new TestVertex(aName), new TestVertex(bName), profit));
++  }
++
++  public static final int SOURCE_NOT_FOUND = -1;
++  public static final int DESTINATION_NOT_FOUND = -2;
++  public static final int SOURCE_DESTINATION_NOT_FOUND = -3;
++  public static final int NO_PATH = -4;
++
++  /**
++   * @param name
++   */
++  public void addTestNode (String name) {
++    InputVertex newV = new InputVertex(this.x, this.y, 0.0, 0.0);
++    this.x++;
++    this.y++;
++    this.dynamicAdd(newV);
++    nameList.put(name, newV);
++    this.namePrintList.put(newV, name);
++  }
++
++  public int findShortestDistance (String A, String B) {
++    int sd = 0;
++    if (!this.nameList.containsKey(A) && !this.nameList.containsKey(B)) {
++      sd = SOURCE_DESTINATION_NOT_FOUND;
++    } else if (!this.nameList.containsKey(A)) {
++      sd = SOURCE_NOT_FOUND;
++    } else if (!this.nameList.containsKey(B)) {
++      sd = DESTINATION_NOT_FOUND;
++    } else if (A.equals(B)) {
++      sd = 0;
++    } else {
++      this.getG().setRoot(this.nameList.get(A));
++      this.dijkstra(0);
++      sd = 1;
++      printMe();
++    }
++    return sd;
++  }
++
++  public void printMe () {
++    this.getG().printGraph(this.namePrintList);
++  }
++
++  @Override
++  protected void relax (InputVertex u, InputVertex v, BiFunction<InputVertex, InputVertex, Double> profitFunction) {
++    double profit = profitFunction.apply(v, u);
++    if (v.getCurrentProfit() < profit) {
++      v.setPi(u);
++      v.setCurrentProfit(profit);
++    }
++  }
++
++}
+diff --git a/src/test/TestEdge.java b/src/test/TestEdge.java
+index 4bb3171..9c7a357 100644
+--- a/src/test/TestEdge.java
++++ b/src/test/TestEdge.java
+@@ -5,43 +5,50 @@ import java.util.Scanner;
+ import dataStructure.InputVertex;
+ 
+ public class TestEdge {
+-	public InputVertex A;
+-	public InputVertex B;
++	public TestVertex a;
++	public TestVertex b;
+ 	public double profit;
+-	public TestEdge(InputVertex a, InputVertex b, double profit) {
+-		super();
+-		A = a;
+-		B = b;
++	public TestEdge (TestVertex a, TestVertex b, double profit) {
++		this.a = a;
++		this.b = b;
+ 		this.profit = profit;
+ 	}
++
+ 	@Override
+-	public int hashCode() {
+-		final int prime = 31;
+-		int result = 1;
+-		result = prime * result + ((A == null) ? 0 : A.hashCode());
+-		result = prime * result + ((B == null) ? 0 : B.hashCode());
+-		return result;
+-	}
+-	@Override
+-	public boolean equals(Object obj) {
+-		if (this == obj)
++	public boolean equals (Object o) {
++		if (this == o) {
+ 			return true;
+-		if (obj == null)
+-			return false;
+-		if (getClass() != obj.getClass())
++		}
++		if (o == null || getClass() != o.getClass()) {
+ 			return false;
+-		TestEdge other = (TestEdge) obj;
+-		if (A == null) {
+-			if (other.A != null)
+-				return false;
+-		} else if (!A.equals(other.A))
++		}
++		TestEdge testEdge = (TestEdge) o;
++		if (Double.compare(testEdge.profit, profit) != 0) {
+ 			return false;
+-		if (B == null) {
+-			if (other.B != null)
+-				return false;
+-		} else if (!B.equals(other.B))
++		}
++		if (a != null
++				? !a.equals(testEdge.a)
++				: testEdge.a != null) {
+ 			return false;
+-		return true;
++		}
++		return b != null
++					 ? b.equals(testEdge.b)
++					 : testEdge.b == null;
++	}
++
++	@Override
++	public int hashCode () {
++		int result;
++		long temp;
++		result = a != null
++						 ? a.hashCode()
++						 : 0;
++		result = 31 * result + (b != null
++														? b.hashCode()
++														: 0);
++		temp = Double.doubleToLongBits(profit);
++		result = 31 * result + (int) (temp ^ (temp >>> 32));
++		return result;
+ 	}
+ 
+ }
+diff --git a/src/test/TestMain.java b/src/test/TestMain.java
+new file mode 100644
+index 0000000..ffb3c98
+--- /dev/null
++++ b/src/test/TestMain.java
+@@ -0,0 +1,127 @@
++package test;
++
++
++import java.io.BufferedReader;
++import java.io.FileReader;
++import java.util.ArrayList;
++import java.util.List;
++
++public class TestMain {
++
++  private TestDoubleGreedy testDoubleGreedy;
++
++  public static void main (String[] args) {
++    TestMain testMain= new TestMain();
++    testMain.readFiletoMap("TestFile1");
++    testMain.testDoubleGreedy.printMe();
++    System.out.println("____________________");
++    testMain.testDoubleGreedy.findShortestDistance("A","H");
++  }
++
++  private void readFiletoMap (String filename) {
++    //this I/O Operation is referred from lab 1.
++    FileReader fr;
++    //		int a=0;
++    try {
++      fr = new FileReader(filename);
++      BufferedReader in = new BufferedReader(fr);
++      String line;
++      List<TestMain.AudMapElement> buff = new ArrayList<>();
++      while ((line = in.readLine()) != null) {
++        //				System.out.println(a++);
++        TestMain.AudMapElement l = parselineDigraph(line);
++        buff.add(l);
++      }
++      //add root
++      TestMain.AudMapElement root=null;
++      for (TestMain.AudMapElement l : buff) {
++        if (l.eleType == 1) {
++          root=l;
++          this.testDoubleGreedy = new TestDoubleGreedy(l.vFrom);
++          break;
++        }
++      }
++      //add profit(edges)
++      for (TestMain.AudMapElement l : buff) {
++        if (l.eleType == 2) {
++          this.testDoubleGreedy.addTestEdge(l.vTo,l.vFrom,l.distance);
++        }
++      }
++      //add other nodes
++      if (root!=null){
++        buff.remove(root);
++      }else {
++        System.out.println("readFiletoMap without root");
++        System.exit(1);
++      }
++
++      for (TestMain.AudMapElement l : buff) {
++        if (l.eleType == 1) {
++          this.testDoubleGreedy.addTestNode(l.vFrom);
++        }
++      }
++      in.close();
++      fr.close();
++    } catch (Exception e) {
++      // TODO Auto-generated catch block
++      e.printStackTrace();
++    }
++  }
++
++  private class AudMapElement {
++
++    int eleType; //0:nothing, 1:v , 2:e
++    Double distance; //see the distance as profit
++    Double waitTime;
++    Double speed;
++    String vFrom;
++    String vTo;
++
++    public AudMapElement (int eleType) {
++      this.eleType = eleType;
++    }
++
++  }
++
++  private TestMain.AudMapElement parselineDigraph (String line) {
++    int eleType = (line.contains("->"))
++                  ? 2
++                  : (line.contains(";"))
++                    ? 1
++                    : 0;
++    TestMain.AudMapElement ret = null;
++    if (eleType == 2) {
++      int index = line.indexOf('-');
++      //			System.out.println("->index:"+index);
++      String firstV = line.substring(0, index).trim();
++      //			System.out.println("firstV:"+firstV);
++      int index2 = line.indexOf('[');
++      String secondV = line.substring(index + 2, index2).trim();
++      //			System.out.println("decondV:"+secondV);
++      index = line.indexOf('"');
++      index2 = line.indexOf('"', index + 1);
++      String[] ds = line.substring(index + 1, index2).trim().split(",");
++      Double distance = Double.parseDouble(ds[0].trim());
++      Double speed = Double.parseDouble(ds[1].trim());
++      ret = new TestMain.AudMapElement(eleType);
++      ret.distance = distance;
++      ret.speed = speed;
++      ret.vFrom = firstV;
++      ret.vTo = secondV;
++    } else if (eleType == 1) {
++      int index = line.indexOf('[');
++      String firstV = line.substring(0, index).trim();
++      index = line.indexOf('"');
++      int index2 = line.indexOf('"', index + 1);
++      String[] vw = line.substring(index + 1, index2).trim().split(",");
++      Double waitTime = Double.parseDouble(vw[1].trim());
++      ret = new TestMain.AudMapElement(eleType);
++      ret.vFrom = firstV;
++      ret.waitTime = waitTime;
++    } else {
++      ret = new TestMain.AudMapElement(eleType);
++    }
++    return ret;
++  }
++
++}
+diff --git a/src/test/TestVertex.java b/src/test/TestVertex.java
+new file mode 100644
+index 0000000..61cdaa4
+--- /dev/null
++++ b/src/test/TestVertex.java
+@@ -0,0 +1,35 @@
++package test;
++
++public class TestVertex {
++  private String name;
++
++  public String getName () {
++    return name;
++  }
++
++  public TestVertex (String name) {
++    this.name = name;
++  }
++
++  @Override
++  public boolean equals (Object o) {
++    if (this == o) {
++      return true;
++    }
++    if (o == null || getClass() != o.getClass()) {
++      return false;
++    }
++    TestVertex that = (TestVertex) o;
++    return name != null
++           ? name.equals(that.name)
++           : that.name == null;
++  }
++
++  @Override
++  public int hashCode () {
++    return name != null
++           ? name.hashCode()
++           : 0;
++  }
++
++}

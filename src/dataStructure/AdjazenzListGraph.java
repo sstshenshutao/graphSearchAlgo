@@ -20,9 +20,11 @@ public class AdjazenzListGraph implements Graph {
   }
 
   public void setRoot (InputVertex root) {
-    this.allVertices.remove(root);
-    this.allVertices.add(this.root);
-    this.root = root;
+    if (!root.equals(this.root)) {
+      this.allVertices.remove(root);
+      this.allVertices.add(this.root);
+      this.root = root;
+    }
   }
 
   @Override
