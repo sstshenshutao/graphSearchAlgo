@@ -79,7 +79,7 @@ public class TestDoubleOriginalGreedy extends TestDoubleGreedy {
         uAllAdj.add(nameList.get(e.a.getName()));
       }
     }
-    uAllAdj.removeAll(f);
+//    uAllAdj.removeAll(f);
     System.out.println(uAllAdj);
     return uAllAdj;
   }

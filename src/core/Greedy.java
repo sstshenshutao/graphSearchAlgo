@@ -122,6 +122,7 @@ public class Greedy {
   }
   protected void relax (InputVertex v, InputVertex u, BiFunction<InputVertex, InputVertex, Double> profitFunction) {
     double profit = profitFunction.apply(v,u);//first error
+
     if (v.getCurrentProfit() < profit) {
       v.setPi(u);
       v.setCurrentProfit(profit);
@@ -179,4 +180,15 @@ public class Greedy {
   //		gre.getG().printGraph();
   //		System.out.println("die gesamte Profit ist: "+ gre.getG().getSumProfit());
   //	}
+  public static void main (String[] args) {
+    InputVertex root = new InputVertex(0,0,0, 0);
+    Greedy gre= new Greedy(root, 1, 0);
+    InputVertex newNode = new InputVertex(1,1,2, 1);
+    InputVertex newNode2 = new InputVertex(1,3,4, 1);
+    gre.dynamicAdd(newNode);
+    gre.getG().printGraph();
+    System.out.println("------------------");
+    gre.dynamicAdd(newNode2);
+    gre.getG().printGraph();
+  }
 }

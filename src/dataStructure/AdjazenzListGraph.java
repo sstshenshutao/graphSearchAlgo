@@ -42,9 +42,9 @@ public class AdjazenzListGraph implements Graph {
   public List<InputVertex> getAdj (List<InputVertex> f, InputVertex u) {
     List<InputVertex> tmp = new ArrayList<>(getAllVertices());
     tmp.remove(u);
-    for (InputVertex v : f) {
-      tmp.remove(v);
-    }
+//    for (InputVertex v : f) {
+//      tmp.remove(v);
+//    }
     return tmp;
   }
 
